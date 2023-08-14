@@ -1,11 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_test/add_screen.dart';
+import 'package:firebase_test/model/person.dart';
 import 'package:flutter/material.dart';
 
 class Home extends StatelessWidget {
   Home({super.key});
-  final Stream<QuerySnapshot<Map>> _contactDocs =
-      FirebaseFirestore.instance.collection('contacts').snapshots();
+  final Stream<QuerySnapshot<Person>> _contactDocs = FirebaseFirestore.instance
+      .collection('contacts')
+      .withConverter<Person>(
+          fromFirestore: (snapshot, _) => Person.fromMap(snapshot.data()!),
+          toFirestore: (person, _) => person.toMap())
+      .snapshots();
 
   @override
   Widget build(BuildContext context) {
@@ -20,22 +25,24 @@ class Home extends StatelessWidget {
           },
           child: const Icon(Icons.add),
         ),
-        body: StreamBuilder<QuerySnapshot<Map>>(
+        body: StreamBuilder<QuerySnapshot<Person>>(
             stream: _contactDocs,
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                List<QueryDocumentSnapshot<Map>>? contactDocsList =
+                List<QueryDocumentSnapshot<Person>>? contactDocsList =
                     snapshot.data?.docs;
                 if (contactDocsList != null) {
                   return ListView.builder(
                       itemCount: contactDocsList.length,
                       itemBuilder: (context, position) {
-                        QueryDocumentSnapshot contactDoc =
+                        QueryDocumentSnapshot<Person> contactDoc =
                             contactDocsList[position];
-                        return ListTile(
-                          title: Text(contactDoc['name']),
-                          subtitle: Text(contactDoc['address']),
-                          trailing: Text(contactDoc['age']),
+                        return Card(
+                          child: ListTile(
+                            title: Text(contactDoc.data().name ?? ''),
+                            subtitle: Text(contactDoc.data().address ?? ''),
+                            trailing: Text(contactDoc.data().age ?? ''),
+                          ),
                         );
                       });
                 } else {

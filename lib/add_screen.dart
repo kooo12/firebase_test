@@ -1,3 +1,4 @@
+import 'package:firebase_test/model/person.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -12,8 +13,11 @@ class _AddScreenState extends State<AddScreen> {
   final TextEditingController _name = TextEditingController();
   final TextEditingController _age = TextEditingController();
   final TextEditingController _address = TextEditingController();
-  final CollectionReference _contacts =
-      FirebaseFirestore.instance.collection('contacts');
+  final CollectionReference<Person> _contacts = FirebaseFirestore.instance
+      .collection('contacts')
+      .withConverter<Person>(
+          fromFirestore: (snapshot, _) => Person.fromMap(snapshot.data()!),
+          toFirestore: (person, _) => person.toMap());
   bool _loading = false;
   bool _success = false;
   bool _error = false;
@@ -83,11 +87,7 @@ class _AddScreenState extends State<AddScreen> {
       _success = false;
       _error = false;
     });
-    _contacts.add({
-      'name': _name.text,
-      'age': _age.text,
-      'address': _address.text
-    }).then((value) {
+    _contacts.add(Person(_name.text, _age.text, _address.text)).then((value) {
       setState(() {
         _loading = false;
         _success = true;
