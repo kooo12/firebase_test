@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:firebase_test/image/image_service.dart';
 import 'package:firebase_test/model/person.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -21,6 +24,7 @@ class _AddScreenState extends State<AddScreen> {
   bool _loading = false;
   bool _success = false;
   bool _error = false;
+  File? _profilePic;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,6 +75,23 @@ class _AddScreenState extends State<AddScreen> {
               const SizedBox(
                 height: 20,
               ),
+              IconButton(
+                  onPressed: () async {
+                    File? image = await selectImage();
+                    if (image != null) {
+                      setState(() {
+                        _profilePic = image;
+                      });
+                    }
+                  },
+                  icon: const Icon(Icons.photo)),
+              (_profilePic != null)
+                  ? Image.file(
+                      _profilePic!,
+                      width: 100,
+                      height: 100,
+                    )
+                  : const SizedBox(),
               ElevatedButton(
                   onPressed: _addContacts, child: const Text('Save contacts')),
               (_loading) ? const CircularProgressIndicator() : const SizedBox(),
@@ -82,12 +103,20 @@ class _AddScreenState extends State<AddScreen> {
   }
 
   Future<void> _addContacts() async {
+    String? profileUrl;
     setState(() {
       _loading = true;
       _success = false;
       _error = false;
     });
-    _contacts.add(Person(_name.text, _age.text, _address.text)).then((value) {
+    if (_profilePic != null) {
+      profileUrl = await uploadImage(_profilePic!);
+    }
+
+    _contacts
+        .add(Person(_name.text, _age.text, _address.text,
+            DateTime.now().microsecondsSinceEpoch, profileUrl))
+        .then((value) {
       setState(() {
         _loading = false;
         _success = true;

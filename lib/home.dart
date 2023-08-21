@@ -3,15 +3,20 @@ import 'package:firebase_test/add_screen.dart';
 import 'package:firebase_test/model/person.dart';
 import 'package:flutter/material.dart';
 
-class Home extends StatelessWidget {
-  Home({super.key});
+class Home extends StatefulWidget {
+  const Home({super.key});
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
   final Stream<QuerySnapshot<Person>> _contactDocs = FirebaseFirestore.instance
       .collection('contacts')
       .withConverter<Person>(
           fromFirestore: (snapshot, _) => Person.fromMap(snapshot.data()!),
           toFirestore: (person, _) => person.toMap())
       .snapshots();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,10 +44,16 @@ class Home extends StatelessWidget {
                             contactDocsList[position];
                         return Card(
                           child: ListTile(
-                            title: Text(contactDoc.data().name ?? ''),
-                            subtitle: Text(contactDoc.data().address ?? ''),
-                            trailing: Text(contactDoc.data().age ?? ''),
-                          ),
+                              title: Text(contactDoc.data().name ?? ''),
+                              subtitle: Text(contactDoc.data().address ?? ''),
+                              trailing: Text(contactDoc.data().age ?? ''),
+                              leading: (contactDoc.data().profileUrl != null)
+                                  ? Image.network(
+                                      contactDoc.data().profileUrl!,
+                                      width: 45,
+                                      height: 40,
+                                    )
+                                  : const SizedBox()),
                         );
                       });
                 } else {
