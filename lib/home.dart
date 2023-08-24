@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_test/add_screen.dart';
 import 'package:firebase_test/model/person.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,13 @@ class _HomeState extends State<Home> {
     return Scaffold(
         appBar: AppBar(
           title: const Text('Firebase Test'),
+          actions: [
+            IconButton(
+                onPressed: () {
+                  FirebaseAuth.instance.signOut();
+                },
+                icon: const Icon(Icons.exit_to_app_outlined))
+          ],
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
@@ -53,7 +61,11 @@ class _HomeState extends State<Home> {
                                       width: 45,
                                       height: 40,
                                     )
-                                  : const SizedBox()),
+                                  : const SizedBox(
+                                      width: 40,
+                                      height: 40,
+                                      child: Icon(Icons.person),
+                                    )),
                         );
                       });
                 } else {

@@ -14,6 +14,7 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController _otpController = TextEditingController();
   bool _codeSent = false;
   bool _loading = false;
+  String? _verificationID;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,7 +36,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       border: OutlineInputBorder(),
                     ),
                   ),
-                  ElevatedButton(onPressed: () {}, child: const Text('Verify')),
+                  ElevatedButton(
+                      onPressed: () {
+                        PhoneAuthCredential credential =
+                            PhoneAuthProvider.credential(
+                                verificationId: _verificationID!,
+                                smsCode: _otpController.text);
+                        FirebaseAuth.instance
+                            .signInWithCredential(credential)
+                            .then((value) {})
+                            .catchError((e) {});
+                      },
+                      child: const Text('Verify')),
                   (_loading)
                       ? const CircularProgressIndicator()
                       : const SizedBox()
@@ -63,6 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               verificationCompleted: (credential) {},
                               verificationFailed: (exception) {},
                               codeSent: (s, n) {
+                                _verificationID = s;
                                 setState(() {
                                   _codeSent = true;
                                   _loading = false;
